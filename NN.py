@@ -1,23 +1,31 @@
+import torch
 import torch.nn as nn
-import torch.nn.functional as F
+from torch.distributions.normal import Normal
 
 class PolicyNN(nn.Module):
     def __init__(self, input_shape, output_shape):
         super(PolicyNN, self).__init__()
-        self.model = nn.Sequential(
-            nn.Linear(input_shape, 16),
+        self.actions_mean = nn.Sequential(
+            nn.Linear(input_shape, 32),
             nn.ReLU(),
-            nn.Linear(16, 16),
+            nn.Linear(32, 32),
             nn.ReLU(),
-            nn.Linear(16, output_shape),
+            nn.Linear(32, output_shape),
             nn.Tanh()
         )
+        self.actions_logstd = nn.Parameter(torch.zeros(output_shape))
         #self.model.double()????
 
-    def forward(self, x):
+    def forward(self, x, actions=None):
         #output = F.log_softmax(x, dim=1)
-        output = self.model(x)
-        return output
+        actions_mean = self.actions_mean(x)
+        actions_logstd = self.actions_logstd
+        actions_std = torch.exp(actions_logstd)
+        prob = Normal(actions_mean, actions_std)
+        if actions is None:
+            actions = prob.sample()
+        return actions, prob.log_prob(actions)
+
 
 class CriticNN(nn.Module):
     def __init__(self, input_shape):

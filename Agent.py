@@ -4,26 +4,37 @@ import Memory
 
 class Agent:
 
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, batch_size):
         self.agent_control = AgentControl.AgentControl(state_size=state_size, action_size=action_size)
-        self.memory = Memory.Memory() #mozda u numpy ili odmah u tensor, na osnovu TRAJECTORY_LENGTH velicina
+        self.memory = Memory.Memory(state_size, action_size, batch_size)
+        self.policy_loss_m = []
+        self.critic_loss_m = []
+        self.policy_loss_mm = []
+        self.critic_loss_mm = []
 
     def get_action(self, state):
-        action = self.agent_control.get_action(state)
-        return action.cpu().detach().numpy()
+        actions, actions_logprob = self.agent_control.get_action(state)
+        return actions.cpu().detach().numpy(), actions_logprob.detach()
 
-    def add_to_memory(self, state, action, new_state, reward):
-        self.memory.add(state, action, new_state, reward)
+    def add_to_memory(self, state, action, actions_logprob, new_state, reward, done, n_batch_step):
+        self.memory.add(state, action, actions_logprob, new_state, reward, done, n_batch_step)
 
-    def update(self):
-        while len(self.memory.ep_state) != 0:
-            state, action, new_state, reward = self.memory.get()
-            advantage = self.agent_control.advantage(state, new_state, reward)
-            ratio = self.agent_control.ratio(state, action)
+    def calculate_advantage(self):
+        next_value = self.agent_control.get_critic_value(self.memory.states[-1]).detach()
+        values = self.agent_control.get_critic_value(self.memory.states).squeeze(-1).detach()
+        self.memory.calculate_advantage(next_value, values)
 
-    def reset(self):
-        self.memory.reset()
-        self.agent_control.sync_nns()
+    def update(self, indices):
+        # ratio = new/old log prob
+        # za isto stanje ubacimo u policy NN da bi dobili novu raspodelu a verovatnocu dobijamo
+        # kada trazimo ver za istu akciju u novoj raspodelu
+        new_action_logprob = self.agent_control.calculate_logprob(self.memory.states[indices], self.memory.actions[indices])
+        ratios = self.agent_control.calculate_ratio(new_action_logprob, self.memory.action_logprobs[indices])
+        policy_loss = self.agent_control.update_policy(self.memory.advantages[indices], ratios).detach()
+        critic_loss = self.agent_control.update_critic(self.memory.gt[indices], self.memory.states[indices]).detach()
+        self.policy_loss_m.append(policy_loss.item())
+        self.critic_loss_m.append(critic_loss.item())
+
 
 
 

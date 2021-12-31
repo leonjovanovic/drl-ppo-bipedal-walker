@@ -6,37 +6,42 @@ class AgentControl:
 
     def __init__(self, state_size, action_size):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.policy_nn_old = NN.PolicyNN(input_shape=state_size, output_shape=action_size).to(self.device)
-        self.policy_nn_new = NN.PolicyNN(input_shape=state_size, output_shape=action_size).to(self.device)
-        self.sync_nns()
+        self.policy_nn = NN.PolicyNN(input_shape=state_size, output_shape=action_size).to(self.device)
         self.critic_nn = NN.CriticNN(input_shape=state_size).to(self.device)
+        self.optimizer_policy = torch.optim.Adam(params=self.policy_nn.parameters(), lr=Config.LEARNING_RATE_POLICY)
+        self.optimizer_critic = torch.optim.Adam(params=self.critic_nn.parameters(), lr=Config.LEARNING_RATE_CRITIC)
+        self.loss_critic = torch.nn.MSELoss()
 
     def get_action(self, state):
-        # Using old policy to collect data
-        actions = self.policy_nn_old(torch.tensor(state, dtype=torch.float, device=self.device))
-        return actions
+        actions, actions_logprob = self.policy_nn(torch.tensor(state, dtype=torch.float, device=self.device))
+        return actions, actions_logprob
 
-    def advantage(self, ep_state, ep_new_state, ep_reward):
-        # [25]
-        v_s = self.critic_nn(torch.tensor(ep_state, dtype=torch.float, device=self.device)).squeeze(-1)
-        # number [1]
-        v_ns = self.critic_nn(torch.tensor(ep_new_state[-1], dtype=torch.float, device=self.device)).squeeze(-1)
-        gt = v_ns.item()
-        gts = [0]*len(ep_state)
-        for i in range(len(ep_state) - 1, -1, -1):
-            gts[i] = ep_reward[i] + Config.GAMMA * gt
-            gt = gts[i]
-        gts_tensor = torch.tensor(gts, dtype=torch.float, device=self.device)
-        return (gts_tensor - v_s).detach()
+    def get_critic_value(self, state):
+        return self.critic_nn(state)
 
+    def calculate_logprob(self, states, actions):
+        _, new_actions_logprob = self.policy_nn(states, actions)
+        return new_actions_logprob
 
-    def ratio(self, ep_state, ep_action):
-        new_action = self.policy_nn_new(torch.tensor(ep_state, dtype=torch.float, device=self.device))
-        action_tensor = torch.tensor(ep_action, dtype=torch.float, device=self.device)
-        # TODO
-        # TODO
-        # TODO
+    def calculate_ratio(self, new_action_logprob, action_logprobs):
+        return torch.exp(torch.sum(new_action_logprob, dim=1) - torch.sum(action_logprobs, dim=1))
 
-    def sync_nns(self):
-        self.policy_nn_new.load_state_dict(self.policy_nn_old.state_dict())
+    def update_policy(self, advantages, ratios):
+        ratios = torch.minimum(ratios, torch.clamp(ratios, 1-Config.CLIPPING_EPSILON, 1+Config.CLIPPING_EPSILON))
+        policy_loss = ratios * advantages
+        policy_loss = -policy_loss.mean()
+        self.optimizer_policy.zero_grad()
+        policy_loss.backward()
+        #nn.utils.clip_grad_norm_(agent.parameters(), args.max_grad_norm)
+        self.optimizer_policy.step()
+        return policy_loss
+
+    def update_critic(self, gt, states):
+        estimated_value = self.critic_nn(states).squeeze(-1)
+        critic_loss = self.loss_critic(gt, estimated_value)
+        self.optimizer_critic.zero_grad()
+        critic_loss.backward()
+        self.optimizer_critic.step()
+        return critic_loss
+
 
