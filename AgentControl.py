@@ -38,6 +38,8 @@ class AgentControl:
 
     def update_critic(self, gt, states):
         estimated_value = self.critic_nn(states).squeeze(-1)
+        #print(states)
+        #print(estimated_value)
         critic_loss = self.loss_critic(gt, estimated_value)
         self.optimizer_critic.zero_grad()
         critic_loss.backward()

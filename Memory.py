@@ -25,6 +25,7 @@ class Memory:
         self.dones[n_batch_step] = torch.Tensor((int(done is True), )).squeeze(-1).to(self.device)
 
     def calculate_advantage(self, next_value, values):
+        #print(next_value)
         gt = next_value
         for i in reversed(range(self.batch_size)):
             gt = self.rewards[i] + Config.GAMMA * gt * (1 - self.dones[i])
