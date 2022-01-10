@@ -19,13 +19,12 @@ class Memory:
     def add(self, state, action, actions_logprob, new_state, reward, done, n_batch_step):
         self.states[n_batch_step] = torch.Tensor(state).to(self.device)
         self.actions[n_batch_step] = torch.Tensor(action).to(self.device)
-        self.action_logprobs[n_batch_step] = actions_logprob
+        self.action_logprobs[n_batch_step] = actions_logprob.detach()
         self.new_states[n_batch_step] = torch.Tensor(new_state).to(self.device)
         self.rewards[n_batch_step] = torch.Tensor((reward, )).squeeze(-1).to(self.device)
         self.dones[n_batch_step] = torch.Tensor((int(done is True), )).squeeze(-1).to(self.device)
 
     def calculate_advantage(self, next_value, values):
-        #print(next_value)
         gt = next_value
         for i in reversed(range(self.batch_size)):
             gt = self.rewards[i] + Config.GAMMA * gt * (1 - self.dones[i])

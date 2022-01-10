@@ -24,22 +24,19 @@ class AgentControl:
         return new_actions_logprob
 
     def calculate_ratio(self, new_action_logprob, action_logprobs):
-        return torch.exp(torch.sum(new_action_logprob, dim=1) - torch.sum(action_logprobs, dim=1))
+        return torch.exp(torch.sum(new_action_logprob, dim=1) - torch.sum(action_logprobs, dim=1).detach())
 
     def update_policy(self, advantages, ratios):
-        ratios = torch.minimum(ratios, torch.clamp(ratios, 1-Config.CLIPPING_EPSILON, 1+Config.CLIPPING_EPSILON))
-        policy_loss = ratios * advantages
+        policy_loss = torch.minimum(ratios * advantages, torch.clamp(ratios, 1-Config.CLIPPING_EPSILON, 1+Config.CLIPPING_EPSILON) * advantages)
         policy_loss = -policy_loss.mean()
         self.optimizer_policy.zero_grad()
         policy_loss.backward()
-        #nn.utils.clip_grad_norm_(agent.parameters(), args.max_grad_norm)
+        torch.nn.utils.clip_grad_norm_(self.policy_nn.parameters(), Config.MAX_GRAD_NORM)
         self.optimizer_policy.step()
         return policy_loss
 
     def update_critic(self, gt, states):
         estimated_value = self.critic_nn(states).squeeze(-1)
-        #print(states)
-        #print(estimated_value)
         critic_loss = self.loss_critic(gt, estimated_value)
         self.optimizer_critic.zero_grad()
         critic_loss.backward()
