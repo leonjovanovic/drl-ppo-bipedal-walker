@@ -21,9 +21,9 @@ class TestProcess:
         ep_reward = 0
         ep_reward_mean = [0]*100
         print("Testing...")
-        print("Episodes (/100) done: ", end="")
+        print("Episodes done [", end="")
         for n_episode in range(Config.NUMBER_OF_EPISODES):
-            print(n_episode, end="|")
+            print('.', end="")
             while True:
                 if n_episode % 25 == 0:
                     self.env.render()
@@ -36,8 +36,8 @@ class TestProcess:
                     ep_reward_mean[n_episode % 100] = ep_reward
                     ep_reward = 0
                     break
-        print("")
-        print(" Mean 100 test reward: " + str(np.round(np.mean(ep_reward_mean), 2)))
+        print("]")
+        print("  Mean 100 test reward: " + str(np.round(np.mean(ep_reward_mean), 2)))
         if self.writer is not None:
             self.writer.add_scalar('testing 100 reward', np.mean(ep_reward_mean), n_step)
         print("Done testing!")
