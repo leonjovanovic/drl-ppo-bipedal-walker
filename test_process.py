@@ -25,8 +25,8 @@ class TestProcess:
         for n_episode in range(Config.NUMBER_OF_EPISODES):
             print('.', end="")
             while True:
-                if n_episode % 25 == 0:
-                    self.env.render()
+                #if n_episode % 25 == 0:
+                #    self.env.render()
                 actions, _ = self.policy_nn(torch.tensor(state, dtype=torch.float, device=self.device))
                 new_state, reward, done, _ = self.env.step(actions.cpu().detach().numpy())
                 ep_reward += reward

@@ -19,9 +19,10 @@ n_episodes = 0
 ep_reward = 0
 ep_reward_mean = [0]*100
 for n_step in range(Config.NUMBER_OF_STEPS):
+    # Test the model after 50 steps
     if n_step % 50 == 0 and n_step > 0:
         test_process.test(agent.agent_control.policy_nn, n_step)
-    # Collect samples
+    # Collect batch_size number of samples
     for n_batch_step in range(Config.BATCH_SIZE):
         actions, actions_logprob = agent.get_action(state)
         new_state, reward, done, _ = env.step(actions)
@@ -33,6 +34,8 @@ for n_step in range(Config.NUMBER_OF_STEPS):
             ep_reward_mean[n_episodes % 100] = ep_reward
             n_episodes += 1
             ep_reward = 0
+    agent.calculate_old_value_state()
+    # Calculate advantage
     agent.calculate_advantage()
 
     batch_indices = np.arange(Config.BATCH_SIZE)
