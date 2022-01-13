@@ -25,7 +25,7 @@ class PolicyNN(nn.Module):
         prob = Normal(actions_mean, actions_std)
         if actions is None:
             actions = prob.sample()
-        return actions, prob.log_prob(actions)
+        return actions, prob.log_prob(actions), torch.sum(prob.entropy(), dim=-1)
 
 
 class CriticNN(nn.Module):
@@ -33,9 +33,9 @@ class CriticNN(nn.Module):
         super(CriticNN, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(input_shape, 64),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(64, 64),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(64, 1)
         )
         #self.model.double()????
