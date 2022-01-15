@@ -13,8 +13,7 @@ class PolicyNN(nn.Module):
             nn.Tanh(),
             nn.Linear(64, 64),
             nn.Tanh(),
-            nn.Linear(64, output_shape),
-            nn.Tanh()
+            nn.Linear(64, output_shape)
         )
         self.actions_logstd = nn.Parameter(torch.zeros(output_shape))
 

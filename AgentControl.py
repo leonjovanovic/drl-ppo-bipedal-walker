@@ -8,8 +8,8 @@ class AgentControl:
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.policy_nn = NN.PolicyNN(input_shape=state_size, output_shape=action_size).to(self.device)
         self.critic_nn = NN.CriticNN(input_shape=state_size).to(self.device)
-        self.optimizer_policy = torch.optim.Adam(params=self.policy_nn.parameters(), lr=Config.LEARNING_RATE_POLICY, eps=1e-5)
-        self.optimizer_critic = torch.optim.Adam(params=self.critic_nn.parameters(), lr=Config.LEARNING_RATE_CRITIC, eps=1e-5)
+        self.optimizer_policy = torch.optim.Adam(params=self.policy_nn.parameters(), lr=Config.LEARNING_RATE_POLICY, eps=Config.EPSILON)
+        self.optimizer_critic = torch.optim.Adam(params=self.critic_nn.parameters(), lr=Config.LEARNING_RATE_CRITIC, eps=Config.EPSILON)
         self.loss_critic = torch.nn.MSELoss()
 
     def set_optimizer_lr(self, n_step):
@@ -54,10 +54,11 @@ class AgentControl:
         critic_loss1 = torch.square(estimated_value - gt)
         # Clipped value
         critic_loss2 = torch.square(estimated_value_clipped - gt)
-        critic_loss = .25 * (torch.maximum(critic_loss1, critic_loss2)).mean()
+        critic_loss = 0.5 * (torch.maximum(critic_loss1, critic_loss2)).mean()
         #critic_loss = self.loss_critic(gt, estimated_value)
         self.optimizer_critic.zero_grad()
         critic_loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.critic_nn.parameters(), Config.MAX_GRAD_NORM)
         self.optimizer_critic.step()
         return critic_loss
 

@@ -48,19 +48,20 @@ class Agent:
         self.policy_loss_m.append(policy_loss.detach().item())
         self.critic_loss_m.append(critic_loss.detach().item())
 
-    def record_results(self, n_step, writer, n_episodes):
+    def record_results(self, n_step, writer, n_episodes, env):
         self.policy_loss_mm[n_step % 100] = np.mean(self.policy_loss_m)
         self.critic_loss_mm[n_step % 100] = np.mean(self.critic_loss_m)
         print("Step " + str(n_step) + "/" + str(Config.NUMBER_OF_STEPS) + " Mean 100 policy loss: " + str(
             np.mean(self.policy_loss_mm[:min(n_step + 1, 100)])) + " Mean 100 critic loss: " + str(
             np.mean(self.critic_loss_mm[:min(n_step + 1, 100)])) + " Mean 100 reward: " + str(
-            np.round(np.mean(self.ep_reward_mean[:min(n_episodes, 100)]), 2)) + " Last reward: " + str(
-            np.round(self.ep_reward_mean[(n_episodes - 1) % 100], 2)))
+            np.round(np.mean(env.return_queue), 2)) + " Last reward: " + str(
+            np.round(env.return_queue[-1], 2)))
+
         if Config.WRITER_FLAG:
             writer.add_scalar('pg_loss', np.mean(self.policy_loss_m), n_step)
             writer.add_scalar('vl_loss', np.mean(self.critic_loss_m), n_step)
-            writer.add_scalar('rew', self.ep_reward_mean[(n_episodes - 1) % 100], n_step)
-            writer.add_scalar('100rew', np.mean(self.ep_reward_mean[:min(n_episodes, 100)]), n_step)
+            writer.add_scalar('rew', env.return_queue[-1], n_step)
+            writer.add_scalar('100rew', np.mean(env.return_queue), n_step)
         self.critic_loss_m = []
         self.policy_loss_m = []
 

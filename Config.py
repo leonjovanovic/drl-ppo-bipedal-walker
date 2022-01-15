@@ -1,9 +1,11 @@
 import datetime
 
+#Izbrisati nepotrebno u main i testu
+#eps_start_end
+
 ENV_NAME = 'BipedalWalker-v3'
 SEED = 9
-# 7 000 000 STEPS / batch_size
-NUMBER_OF_STEPS = 1000
+NUMBER_OF_STEPS = 1500 # probati 500, 600, 700, 800, ... 1500
 NUMBER_OF_EPISODES = 100
 BATCH_SIZE = 2048
 MINIBATCH_SIZE = 32
@@ -11,22 +13,27 @@ UPDATE_STEPS = 10
 
 GAE = True
 GAMMA = 0.99
-LAMBDA = 0.97
+LAMBDA = 0.84
 
 CLIPPING_EPSILON = 0.2
+LEARNING_RATE_POLICY = 0.0003
+LEARNING_RATE_CRITIC = 0.0004
 ANNEAL_LR = True
-LEARNING_RATE_POLICY = 0.0004
-LEARNING_RATE_CRITIC = 0.0005
 MAX_GRAD_NORM = 0.5
+EPSILON = 1e-5 # napraviti u Agentu da pada sa 1e-5 do 1e-6 kako raste NUMBER_OF_STEPS
 
 ENTROPY_COEF = 0
 ENV_SCALE_CROP = True
 
 WRITER_FLAG = True
-now = datetime.datetime.now()
-date_time = "{}_{}.{}.{}".format(now.day, now.hour, now.minute, now.second)
-gae = 'gae' if GAE else ''
+
+# ---------------------------------------- Output -----------------------------------------------
+gae = 'gae' + str(LAMBDA) if GAE else ''
+anneal = 'annealed' if ANNEAL_LR else ''
 env = 'env_scaled' if ENV_SCALE_CROP else ''
-WRITER_NAME = 'PPO_' + ENV_NAME + '_' + str(LEARNING_RATE_POLICY) + '_' + str(LEARNING_RATE_CRITIC) + '_' + str(
-    BATCH_SIZE) + '_' + str(MINIBATCH_SIZE) + '_' + str(SEED) + '-norm_' + gae + str(LAMBDA) + '-' + str(
-    ENTROPY_COEF) + '-' + env + '-' + date_time
+now = datetime.datetime.now()
+date_time = "{}.{}.{}.{}".format(now.day, now.hour, now.minute, now.second)
+WRITER_NAME = 'PPO_BW-v3' + '_' + str(SEED) + "_" + str(NUMBER_OF_STEPS) + "_" + str(BATCH_SIZE) + "_" + \
+              str(MINIBATCH_SIZE) + "_" + str(UPDATE_STEPS) + "_" + gae + "_" + str(GAMMA) + "_" + \
+              str(CLIPPING_EPSILON) + "_" + str(LEARNING_RATE_POLICY) + "_" + str(LEARNING_RATE_CRITIC) + "_" + \
+              anneal + "_1" + env + "_" + str(ENTROPY_COEF) + '_' + date_time
