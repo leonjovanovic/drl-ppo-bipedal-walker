@@ -8,8 +8,8 @@ class AgentControl:
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.policy_nn = NN.PolicyNN(input_shape=state_size, output_shape=action_size).to(self.device)
         self.critic_nn = NN.CriticNN(input_shape=state_size).to(self.device)
-        self.optimizer_policy = torch.optim.Adam(params=self.policy_nn.parameters(), lr=Config.LEARNING_RATE_POLICY, eps=Config.EPSILON)
-        self.optimizer_critic = torch.optim.Adam(params=self.critic_nn.parameters(), lr=Config.LEARNING_RATE_CRITIC, eps=Config.EPSILON)
+        self.optimizer_policy = torch.optim.Adam(params=self.policy_nn.parameters(), lr=Config.LEARNING_RATE_POLICY, eps=Config.EPSILON_START)
+        self.optimizer_critic = torch.optim.Adam(params=self.critic_nn.parameters(), lr=Config.LEARNING_RATE_CRITIC, eps=Config.EPSILON_START)
         self.loss_critic = torch.nn.MSELoss()
 
     def set_optimizer_lr(self, n_step):
@@ -20,6 +20,8 @@ class AgentControl:
             lr_critic = frac * Config.LEARNING_RATE_CRITIC
             self.optimizer_policy.param_groups[0]["lr"] = lr_policy
             self.optimizer_critic.param_groups[0]["lr"] = lr_critic
+
+        self.optimizer_critic.param_groups[0]["eps"] = Config.EPSILON_START - n_step * (Config.EPSILON_START - Config.EPSILON_END) / Config.NUMBER_OF_STEPS
 
     def get_action(self, state):
         actions, actions_logprob, _ = self.policy_nn(torch.tensor(state, dtype=torch.float, device=self.device))

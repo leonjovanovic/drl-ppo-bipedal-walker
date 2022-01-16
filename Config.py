@@ -2,10 +2,12 @@ import datetime
 
 #Izbrisati nepotrebno u main i testu
 #eps_start_end
+#nauciti sta radi LAMBDA u GAE
+#nauciti sta radi EPSILON u Adam
 
 ENV_NAME = 'BipedalWalker-v3'
 SEED = 9
-NUMBER_OF_STEPS = 1500 # probati 500, 600, 700, 800, ... 1500
+NUMBER_OF_STEPS = 500 # probati 500, 600, 700, 800, ... 1500
 NUMBER_OF_EPISODES = 100
 BATCH_SIZE = 2048
 MINIBATCH_SIZE = 32
@@ -20,7 +22,8 @@ LEARNING_RATE_POLICY = 0.0003
 LEARNING_RATE_CRITIC = 0.0004
 ANNEAL_LR = True
 MAX_GRAD_NORM = 0.5
-EPSILON = 1e-5 # napraviti u Agentu da pada sa 1e-5 do 1e-6 kako raste NUMBER_OF_STEPS
+EPSILON_START = 1e-5 # napraviti u Agentu da pada sa 1e-5 do 1e-6 kako raste NUMBER_OF_STEPS
+EPSILON_END = 1e-6
 
 ENTROPY_COEF = 0
 ENV_SCALE_CROP = True
