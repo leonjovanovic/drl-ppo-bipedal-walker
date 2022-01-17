@@ -7,7 +7,7 @@ import datetime
 
 ENV_NAME = 'BipedalWalker-v3'
 SEED = 9
-NUMBER_OF_STEPS = 500 # probati 500, 600, 700, 800, ... 1500
+NUMBER_OF_STEPS = 1500 # probati 500, 600, 700, 800, ... 1500
 NUMBER_OF_EPISODES = 100
 BATCH_SIZE = 2048
 MINIBATCH_SIZE = 32
@@ -23,7 +23,7 @@ LEARNING_RATE_CRITIC = 0.0004
 ANNEAL_LR = True
 MAX_GRAD_NORM = 0.5
 EPSILON_START = 1e-5 # napraviti u Agentu da pada sa 1e-5 do 1e-6 kako raste NUMBER_OF_STEPS
-EPSILON_END = 1e-6
+EPSILON_END = 1e-5
 
 ENTROPY_COEF = 0
 ENV_SCALE_CROP = True
@@ -39,4 +39,4 @@ date_time = "{}.{}.{}.{}".format(now.day, now.hour, now.minute, now.second)
 WRITER_NAME = 'PPO_BW-v3' + '_' + str(SEED) + "_" + str(NUMBER_OF_STEPS) + "_" + str(BATCH_SIZE) + "_" + \
               str(MINIBATCH_SIZE) + "_" + str(UPDATE_STEPS) + "_" + gae + "_" + str(GAMMA) + "_" + \
               str(CLIPPING_EPSILON) + "_" + str(LEARNING_RATE_POLICY) + "_" + str(LEARNING_RATE_CRITIC) + "_" + \
-              anneal + "_1" + env + "_" + str(ENTROPY_COEF) + '_' + date_time
+              anneal + "_" + str(EPSILON_START)[-2:] + "_" + str(EPSILON_END)[-2:] + "_" + env + "_" + str(ENTROPY_COEF) + '_' + date_time

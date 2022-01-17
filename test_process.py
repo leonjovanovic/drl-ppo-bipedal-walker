@@ -4,6 +4,7 @@ import torch
 import Config
 import NN
 from copy import deepcopy
+import sys
 
 class TestProcess:
 
@@ -20,6 +21,7 @@ class TestProcess:
         self.policy_nn.load_state_dict(trained_policy_nn.state_dict())
         state = self.env.reset()
         state = (state - env.obs_rms.mean) / np.sqrt(env.obs_rms.var + env.epsilon)
+        state = np.clip(state, -10, 10)
         print("Testing...")
         print("Episodes done [", end="")
         for n_episode in range(Config.NUMBER_OF_EPISODES):
@@ -31,6 +33,7 @@ class TestProcess:
                 new_state, reward, done, _ = self.env.step(actions.cpu().detach().numpy())
                 state = new_state
                 state = (state - env.obs_rms.mean) / np.sqrt(env.obs_rms.var + env.epsilon)
+                state = np.clip(state, -10, 10)
                 if done:
                     state = self.env.reset()
                     break
@@ -39,5 +42,8 @@ class TestProcess:
         if writer is not None:
             writer.add_scalar('testing 100 reward', np.mean(self.env.return_queue), n_step)
         print("Done testing!")
+        if np.mean(self.env.return_queue) >= 300:
+            print("Goal reached! Mean reward over 100 episodes is " + str(np.mean(self.env.return_queue)))
+            sys.exit(0)
 
 

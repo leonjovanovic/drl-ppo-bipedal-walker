@@ -39,6 +39,6 @@ class Memory:
         for i in reversed(range(self.batch_size)):
             delta = self.rewards[i] + Config.GAMMA * next_values[i] * (1 - self.dones[i]) - values[i]
             self.advantages[i] = delta + Config.LAMBDA * Config.GAMMA * self.advantages[i+1] * (1 - self.dones[i])
-            # for critic
+            # For critic
             self.gt[i] = self.rewards[i] + Config.GAMMA * self.gt[i+1] * (1 - self.dones[i])
 
