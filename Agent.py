@@ -2,6 +2,7 @@ import AgentControl
 import Config
 import Memory
 import numpy as np
+import itertools
 
 class Agent:
     # Role of Agent class is to coordinate between AgentControll where we do all calculations
@@ -14,6 +15,7 @@ class Agent:
         self.policy_loss_mm = [0] * 100
         self.critic_loss_mm = [0] * 100
         self.max_reward = -300
+        self.ep_count = 0
 
     def set_optimizer_lr_eps(self, n_step):
         self.agent_control.set_optimizer_lr_eps(n_step)
@@ -72,10 +74,10 @@ class Agent:
         self.critic_loss_mm[n_step % 100] = np.mean(self.critic_loss_m)
         print("Step " + str(n_step) + "/" + str(Config.NUMBER_OF_STEPS) + " Mean 100 policy loss: " + str(
             np.round(np.mean(self.policy_loss_mm[:min(n_step + 1, 100)]), 4)) + " Mean 100 critic loss: " + str(
-            np.round(np.mean(self.critic_loss_mm[:min(n_step + 1, 100)]), 4)) + " Mean 100 reward: " + str(
-            np.round(np.mean(env.return_queue), 2)) + " Last reward: " + str(
-            np.round(env.return_queue[-1], 2)) + " Max reward: " + str(
-            np.round(self.max_reward, 2)))
+            np.round(np.mean(self.critic_loss_mm[:min(n_step + 1, 100)]), 4)) + " Max reward: " + str(
+            np.round(self.max_reward, 2)) + " Mean 100 reward: " + str(
+            np.round(np.mean(env.return_queue), 2)) + " Last rewards: " + str(
+            np.round(list(itertools.islice(env.return_queue, min(env.episode_count, 100)-(env.episode_count-self.ep_count), min(env.episode_count, 100))), 2)))
 
         if Config.WRITER_FLAG:
             writer.add_scalar('pg_loss', np.mean(self.policy_loss_m), n_step)
@@ -84,8 +86,7 @@ class Agent:
             writer.add_scalar('100rew', np.mean(env.return_queue), n_step)
         self.critic_loss_m = []
         self.policy_loss_m = []
-
-
+        self.ep_count = env.episode_count
 
 
 

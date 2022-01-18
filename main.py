@@ -5,6 +5,7 @@ from tensorboardX import SummaryWriter
 import Config
 import Agent
 from test_process import TestProcess
+import itertools
 
 # --------------------------------------------------- Initialization ---------------------------------------------------
 # Create Bipedal Walker enviroment and add wrappers to record statistics and clip action if its extreme
@@ -26,13 +27,12 @@ writer = SummaryWriter(log_dir='content/runs/'+Config.WRITER_NAME) if Config.WRI
 print(Config.WRITER_NAME)
 # Initialize test process which will be occasionally called to test whether goal is met
 test_process = TestProcess(state_size=state.shape[0], action_size=env.action_space.shape[0], writer=writer)
-
 # ------------------------------------------------------ Training ------------------------------------------------------
 for n_step in range(Config.NUMBER_OF_STEPS):
     # Implement learning rate and epsilon decay for Adam optimizer for both NNs
     agent.set_optimizer_lr_eps(n_step)
     # Test the model after 50 steps
-    if (n_step + 1) % 50 == 0:
+    if (n_step + 1) % 50 == 0 or (len(env.return_queue) >= 100 and np.mean(list(itertools.islice(env.return_queue, 60, 100))) >= 300):
         test_process.test(agent.agent_control.policy_nn, n_step, writer, env)
     # Collect batch_size number of samples
     for n_batch_step in range(Config.BATCH_SIZE):
