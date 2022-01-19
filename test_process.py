@@ -49,6 +49,20 @@ class TestProcess:
         print("Done testing!")
         if np.mean(self.env.return_queue) >= 300:
             print("Goal reached! Mean reward over 100 episodes is " + str(np.mean(self.env.return_queue)))
-            sys.exit(0)
+            model_scripted = torch.jit.script(self.policy_nn) # Export to TorchScript
+            model_scripted.save('model_scripted_' + Config.date_time+'.pt') # Save
+            self.env = gym.wrappers.RecordVideo(env, "bestRecordings", name_prefix="rl-video" + Config.date_time,)
+            state = self.env.reset()
+            state = (state - env.obs_rms.mean) / np.sqrt(env.obs_rms.var + env.epsilon)
+            while True:
+                actions, _, _ = self.policy_nn(torch.tensor(state, dtype=torch.float, device=self.device))
+                new_state, reward, done, _ = self.env.step(actions.cpu().detach().numpy())
+                state = new_state
+                state = (state - env.obs_rms.mean) / np.sqrt(env.obs_rms.var + env.epsilon)
+                state = np.clip(state, -10, 10)
+                if done:
+                    break
+            return True
+        return False
 
 

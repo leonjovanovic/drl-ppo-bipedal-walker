@@ -33,7 +33,9 @@ for n_step in range(Config.NUMBER_OF_STEPS):
     agent.set_optimizer_lr_eps(n_step)
     # Test the model after 50 steps
     if (n_step + 1) % 50 == 0 or (len(env.return_queue) >= 100 and np.mean(list(itertools.islice(env.return_queue, 60, 100))) >= 300):
-        test_process.test(agent.agent_control.policy_nn, n_step, writer, env)
+        end_train = test_process.test(agent.agent_control.policy_nn, n_step, writer, env)
+        if end_train:
+            break
     # Collect batch_size number of samples
     for n_batch_step in range(Config.BATCH_SIZE):
         if (n_step + 1) % 50 == 0:
@@ -66,6 +68,7 @@ for n_step in range(Config.NUMBER_OF_STEPS):
     # Record losses and rewards and print them to console and SummaryWriter for nice Tensorboard graphs
     agent.record_results(n_step, writer, env)
 
+writer.close()
 test_process.env.close()
 env.close()
 
