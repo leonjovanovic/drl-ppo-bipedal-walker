@@ -3,9 +3,9 @@
 ## Summary
 &nbsp;&nbsp;&nbsp;&nbsp;The goal of this application is to implement **PPO algorithm**[[paper]](https://arxiv.org/pdf/1707.06347.pdf) on [Open AI BipedalWalker enviroment](https://gym.openai.com/envs/BipedalWalker-v2/).
   
-![BipedalWalker Gif001](images/bw-ep8.gif) 
-![BipedalWalker Gif050](images/bw-ep125.gif)
-![BipedalWalker Gif100](images/bw-ep240.gif)
+![BipedalWalker Gif008](images/bw-ep8.gif) 
+![BipedalWalker Gif125](images/bw-ep125.gif)
+![BipedalWalker Gif240](images/bw-ep240.gif)
 
 *PPO: Episode 8 vs Episode 125 vs Episode 240*
 
@@ -14,7 +14,7 @@
 
 ![BipedalWalker Enviroment](images/bw_env.png)
 
-*BipedalWalker Enviroment*
+*BipedalWalker Enviroment [Image source](https://shiva-verma.medium.com/teach-your-ai-how-to-walk-5ad55fce8bca)*
 
 &nbsp;&nbsp;&nbsp;&nbsp;State consists of hull angle speed, angular velocity, horizontal speed, vertical speed, position of joints and joints angular speed, legs contact with ground, and 10 lidar rangefinder measurements to help to deal with the hardcore version. There's no coordinates in the state vector. Lidar is less useful in normal version, but it works. 
 
@@ -32,6 +32,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp; PPO algorithm is an upgrade to basic Policy Gradient methods like REINFORCE, Actor-Critic and A2C. First problem with basic PG algorithms was collapse in performance due to incorect step size. If step size is too big, policy will change too much, it its bad we wont be able to recover. Second problem is sample inefficiency - we can get more than one gradient step per enviroment sample. PPO solves this using [Trust Regions](https://en.wikipedia.org/wiki/Trust_region) or not allowing for step to becomes too big. Step size will be determened by difference between new (current) policy and old policy we used to collect samples. PPO suggests two ways to handle this solution: [KL Divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) and Clipped Objective. In this project we used Clipped Objective where we calculated ratio between new and old policy which we clipped to (1-Ɛ, 1+Ɛ). To be pessimistic as possible, minimum was calculated between *ratio * advantage* and *clipped ratio * advantage*.
 
 ![PPO algorithm](images/ppo_algo.png)
+*PPO algorithm*
 
 ## Continuous action implementation
 &nbsp;&nbsp;&nbsp;&nbsp;Since BipedalWalker is Continuous Control enviroment with multiple continuous actions we can't use NN to give us action probabilities. Instead NN will output four action means and we will add aditional [PyTorch Parameter](https://pytorch.org/docs/1.9.1/generated/torch.nn.parameter.Parameter.html) without input, which will represent logarithm of standard deviation. Using mean and std we can calculate [Normal distribution](https://en.wikipedia.org/wiki/Normal_distribution) from which can we sample to get actions we want to take.
@@ -53,22 +54,30 @@
 * Overall Loss Includes Entropy Loss
 
 ## Testing
-&nbsp;&nbsp;&nbsp;&nbsp; To get accurate results, algorithm has additional class (test process) whose job is to occasionally test 100 episodes and calculate mean reward of last 100 episodes. By the rules, if test process gets 300 or higher mean score over last 100 games, goal is reached and we should terminate. If goal isn't reached, training process continues.
+&nbsp;&nbsp;&nbsp;&nbsp; To get accurate results, algorithm has additional class (test process) whose job is to occasionally test 100 episodes and calculate mean reward of last 100 episodes. By the rules, if test process gets 300 or higher mean score over last 100 games, goal is reached and we should terminate. If goal isn't reached, training process continues. Testing is done every 50 * 2048 steps or when mean of last 40 returns is 300 or more.
 
 ## Results
-&nbsp;&nbsp;&nbsp;&nbsp;Results can be seen on graph below, where X axis represents number of steps and Y axis represents mean reward of last 100 episodes.
+&nbsp;&nbsp;&nbsp;&nbsp;One of the results can be seen on graph below, where X axis represents number of steps in algorithm and Y axis represents episode reward, mean training return and mean test return (return = mean episode reward over last 100 episodes). Keep in mind that for goal to be reached mean test return has to reach 300. Also one step in algorithm is 2048 steps in enviroment.
 
 ![Results graph](images/results.png)
 
-- ![#ee3377](https://via.placeholder.com/15/ee3377/000000?text=+) `Basic PPO`
-- ![#359a3c](https://via.placeholder.com/15/359a3c/000000?text=+) `Improved PPO`
+- ![#33bbee](https://via.placeholder.com/15/33bbee/000000?text=+) `Episode reward`
+- ![#359a3c](https://via.placeholder.com/15/359a3c/000000?text=+) `Mean training return`
+- ![#ee3377](https://via.placeholder.com/15/ee3377/000000?text=+) `Mean test return`
 
-&nbsp;&nbsp;&nbsp;&nbsp; As it can be seen, PPO algorithm with improved implementation reached the goal much more quickly than basic PPO with almost X steps difference between their best results.
+* During multiple runs, **mean test return is over 300**, therefore we can conclude that **goal is reached!**
 
-* Best mean reward in last 100 games is **299.73 after X steps**, therefore we can conclude that **goal is reached!**
+&nbsp;&nbsp;&nbsp;&nbsp;Additional statistics
+
+* **Fastest run reached the goal after 700,416 enviroment steps**.
+* **Highest reward in a single episode achieved is 320.5**.
 
 ## Rest of the data and TensorBoard
-&nbsp;&nbsp;&nbsp;&nbsp;Rest of the training data can be found at [/results](/results). If you wish to see it and compare it with the rest, I recommend using TensorBoard. After installation simply change the directory where the data is stored, use the following command
+&nbsp;&nbsp;&nbsp;&nbsp; If you wish to use trained models, there are saved NN models in [/models](/models). Keep in mind that in that folder you need both `data.json` and `model.p` files (with same date in name) for script `load.py` to work. You will have to modify `load.py` PATH parameters and run the script to see results of training.
+
+&nbsp;&nbsp;&nbsp;&nbsp; **If you dont want to bother with running the script, you can head over to the [YouTube](https://www.youtube.com/channel/UCjQBCtMmxV-YW_aeqRi4g9g) or see best recordings in [/recordings](/recordings).**
+
+&nbsp;&nbsp;&nbsp;&nbsp;Rest of the training data can be found at [/content/runs](/content/runs). If you wish to see it and compare it with the rest, I recommend using TensorBoard. After installation simply change the directory where the data is stored, use the following command
   
 ```python
 LOG_DIR = "full\path\to\data"
