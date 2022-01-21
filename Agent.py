@@ -77,7 +77,7 @@ class Agent:
             np.round(np.mean(self.critic_loss_mm[:min(n_step + 1, 100)]), 4)) + " Max reward: " + str(
             np.round(self.max_reward, 2)) + " Mean 100 reward: " + str(
             np.round(np.mean(env.return_queue), 2)) + " Last rewards: " + str(
-            np.round(list(itertools.islice(env.return_queue, min(env.episode_count, 100)-(env.episode_count-self.ep_count), min(env.episode_count, 100))), 2)))
+            np.round(list(itertools.islice(env.return_queue, min(env.episode_count, 100)-(env.episode_count-self.ep_count), min(env.episode_count, 100))), 2)) + " Ep" + str(env.episode_count))
 
         if Config.WRITER_FLAG:
             writer.add_scalar('pg_loss', np.mean(self.policy_loss_m), n_step)
