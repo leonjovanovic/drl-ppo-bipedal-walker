@@ -3,8 +3,7 @@ import numpy as np
 import torch
 import Config
 import NN
-from copy import deepcopy
-import sys
+import json
 
 
 class TestProcess:
@@ -26,7 +25,6 @@ class TestProcess:
             self.env = gym.wrappers.ClipAction(self.env)
         state = self.env.reset()
         state = (state - env.obs_rms.mean) / np.sqrt(env.obs_rms.var + env.epsilon)
-        print("RMS MEAN " + str(env.obs_rms.mean) + " VAR " + str(env.obs_rms.var) + " EPS " + str(env.epsilon))
         state = np.clip(state, -10, 10)
         print("Testing...")
         print("Episodes done [", end="")
@@ -52,6 +50,13 @@ class TestProcess:
         if np.mean(self.env.return_queue) >= 300:
             print("Goal reached! Mean reward over 100 episodes is " + str(np.mean(self.env.return_queue)))
             torch.save(self.policy_nn.state_dict(), 'models/model' + Config.date_time + '.p')
+            data = {
+              "obs_rms_mean": env.obs_rms.mean.tolist(),
+              "obs_rms_var": env.obs_rms.var.tolist(),
+              "eps": env.epsilon
+            }
+            with open('models/data' + Config.date_time + '.json', 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
             self.env = gym.wrappers.RecordVideo(self.env, "bestRecordings", name_prefix="rl-video" + Config.date_time, )
             state = self.env.reset()
             state = (state - env.obs_rms.mean) / np.sqrt(env.obs_rms.var + env.epsilon)
