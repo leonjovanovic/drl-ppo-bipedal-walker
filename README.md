@@ -3,11 +3,11 @@
 ## Summary
 &nbsp;&nbsp;&nbsp;&nbsp;The goal of this application is to implement **PPO algorithm**[[paper]](https://arxiv.org/pdf/1707.06347.pdf) on [Open AI BipedalWalker enviroment](https://gym.openai.com/envs/BipedalWalker-v2/).
   
-![BipedalWalker Gif001](images/bw_001.gif) 
-![BipedalWalker Gif050](images/bw_050.gif)
-![BipedalWalker Gif100](images/bw_100.gif)
+![BipedalWalker Gif001](images/bw-ep8.gif) 
+![BipedalWalker Gif050](images/bw-ep125.gif)
+![BipedalWalker Gif100](images/bw-ep240.gif)
 
-*PPO: Episode 1 vs Episode 50 vs Episode 100*
+*PPO: Episode 8 vs Episode 125 vs Episode 240*
 
 ## Environment
 &nbsp;&nbsp;&nbsp;&nbsp;[BipedalWalker](https://gym.openai.com/envs/BipedalWalker-v2/) is [OpenAI Box2D enviroment](https://gym.openai.com/envs/#box2d) which corresponds to the simple 4-joints walker robot environment. BipedalWalker enviroment contains the head (hull) and 4 joints that represent 2 legs. Normal version of BipedalWalker has slightly uneven terrain that is randomly generated. The robot moves by applying force to 4 joints. 
@@ -31,7 +31,7 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp; PPO algorithm is an upgrade to basic Policy Gradient methods like REINFORCE, Actor-Critic and A2C. First problem with basic PG algorithms was collapse in performance due to incorect step size. If step size is too big, policy will change too much, it its bad we wont be able to recover. Second problem is sample inefficiency - we can get more than one gradient step per enviroment sample. PPO solves this using [Trust Regions](https://en.wikipedia.org/wiki/Trust_region) or not allowing for step to becomes too big. Step size will be determened by difference between new (current) policy and old policy we used to collect samples. PPO suggests two ways to handle this solution: [KL Divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) and Clipped Objective. In this project we used Clipped Objective where we calculated ratio between new and old policy which we clipped to (1-Ɛ, 1+Ɛ). To be pessimistic as possible, minimum was calculated between *ratio * advantage* and *clipped ratio * advantage*.
 
-![PPO algorithm](images/ppo_algo.svg)
+![PPO algorithm](images/ppo_algo.png)
 
 ## Continuous action implementation
 &nbsp;&nbsp;&nbsp;&nbsp;Since BipedalWalker is Continuous Control enviroment with multiple continuous actions we can't use NN to give us action probabilities. Instead NN will output four action means and we will add aditional [PyTorch Parameter](https://pytorch.org/docs/1.9.1/generated/torch.nn.parameter.Parameter.html) without input, which will represent logarithm of standard deviation. Using mean and std we can calculate [Normal distribution](https://en.wikipedia.org/wiki/Normal_distribution) from which can we sample to get actions we want to take.
