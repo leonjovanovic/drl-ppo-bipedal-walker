@@ -47,6 +47,7 @@ class TestProcess:
         if writer is not None:
             writer.add_scalar('testing 100 reward', np.mean(self.env.return_queue), n_step)
         print("Done testing!")
+
         if np.mean(self.env.return_queue) >= 300:
             print("Goal reached! Mean reward over 100 episodes is " + str(np.mean(self.env.return_queue)))
             torch.save(self.policy_nn.state_dict(), 'models/model' + Config.date_time + '.p')
@@ -57,7 +58,6 @@ class TestProcess:
             }
             with open('models/data' + Config.date_time + '.json', 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
-            self.env = gym.wrappers.RecordVideo(self.env, "bestRecordings", name_prefix="rl-video" + Config.date_time, )
             state = self.env.reset()
             state = (state - env.obs_rms.mean) / np.sqrt(env.obs_rms.var + env.epsilon)
             while True:
