@@ -75,7 +75,7 @@
 ## Rest of the data and TensorBoard
 &nbsp;&nbsp;&nbsp;&nbsp; If you wish to use trained models, there are saved NN models in [/models](/models). Keep in mind that in that folder you need both `data.json` and `model.p` files (with same date in name) for script `load.py` to work. You will have to modify `load.py` PATH parameters and run the script to see results of training.
 
-&nbsp;&nbsp;&nbsp;&nbsp; **If you dont want to bother with running the script, you can head over to the [YouTube](https://www.youtube.com/channel/UCjQBCtMmxV-YW_aeqRi4g9g) or see best recordings in [/recordings](/recordings).**
+&nbsp;&nbsp;&nbsp;&nbsp; **If you dont want to bother with running the script, you can head over to the [YouTube](https://youtu.be/h4JpY4pzwec) or see best recordings in [/recordings](/recordings).**
 
 &nbsp;&nbsp;&nbsp;&nbsp;Rest of the training data can be found at [/content/runs](/content/runs). If you wish to see it and compare it with the rest, I recommend using TensorBoard. After installation simply change the directory where the data is stored, use the following command
   
