@@ -72,4 +72,4 @@ if writer is not None:
 test_process.env.close()
 env.close()
 
-#tensorboard --logdir="D:\Users\Leon Jovanovic\Documents\Computer Science\Reinforcement Learning\drl-trpo-ppo-bipedal-walker\content\runs" --host=127.0.0.1
+#tensorboard --logdir="PATH_TO_FOLDER\drl-trpo-ppo-bipedal-walker\content\runs" --host=127.0.0.1
